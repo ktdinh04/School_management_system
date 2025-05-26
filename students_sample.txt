@@ -1,0 +1,3 @@
+SV001|Nguyen Van An|01/01/2000|Nam|Cong nghe Thong tin|an@student.hust.edu.vn|0123456789
+SV002|Tran Thi Binh|15/05/2001|Nu|Cong nghe Thong tin|binh@student.hust.edu.vn|0123456790
+SV003|Le Van Cuong|20/03/2000|Nam|Dien tu Vien thong|cuong@student.hust.edu.vn|0123456791
