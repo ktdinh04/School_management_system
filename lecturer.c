@@ -10,7 +10,12 @@ void addLecturer(Lecturer** head) {
     printf("\n=== THEM GIANG VIEN MOI ===\n");
     printf("Ma giang vien: ");
     scanf("%s", newLecturer->lecturerId);
-    clearInputBuffer();
+    
+    if (findLecturer(*head, newLecturer->lecturerId)) {
+    printf("Ma giang vien da ton tai!\n");
+    free(newLecturer);
+    return;
+    }
     
     printf("Ho ten: ");
     fgets(newLecturer->fullName, MAX_STRING, stdin);
@@ -102,32 +107,57 @@ void updateLecturer(Lecturer* head, char* lecturerId) {
         printf("Khong tim thay giang vien co ma %s!\n", lecturerId);
         return;
     }
-    
     printf("\n=== CAP NHAT THONG TIN GIANG VIEN ===\n");
     printf("Thong tin hien tai:\n");
     printf("Ma GV: %s\n", lecturer->lecturerId);
     printf("Ho ten: %s\n", lecturer->fullName);
-    
+    printf("Khoa: %s\n", lecturer->department);
+    printf("Chuyen nganh: %s\n", lecturer->specialty);
+    printf("Email: %s\n", lecturer->email);
+    printf("Phone: %s\n", lecturer->phone);
+
     printf("\nNhap thong tin moi (Enter de giu nguyen):\n");
-    
+
+    char buffer[MAX_STRING];
+
     printf("Ho ten moi: ");
-    char newName[MAX_STRING];
-    fgets(newName, MAX_STRING, stdin);
-    if (strlen(newName) > 1) {
-        newName[strcspn(newName, "\n")] = 0;
-        strcpy(lecturer->fullName, newName);
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->fullName, buffer);
     }
-    
+
+    printf("Khoa moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->department, buffer);
+    }
+
+    printf("Chuyen nganh moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->specialty, buffer);
+    }
+
     printf("Email moi: ");
-    char newEmail[MAX_STRING];
-    fgets(newEmail, MAX_STRING, stdin);
-    if (strlen(newEmail) > 1) {
-        newEmail[strcspn(newEmail, "\n")] = 0;
-        strcpy(lecturer->email, newEmail);
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->email, buffer);
     }
-    
+
+    printf("So dien thoai moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->phone, buffer);
+    }
+
     printf("Cap nhat thong tin thanh cong!\n");
 }
+
 
 void saveLecturersToFile(Lecturer* head, const char* filename) {
     FILE* file = fopen(filename, "w");
