@@ -8,7 +8,7 @@ void addStudent(Student** head) {
     }
     
     printf("\n=== THEM SINH VIEN MOI ===\n");
-    printf("Ma sinh vien: ");
+    printf("MSSV: ");
     scanf("%s", newStudent->studentId);
     clearInputBuffer();
     
@@ -106,30 +106,75 @@ void updateStudent(Student* head, char* studentId) {
         printf("Khong tim thay sinh vien co ma %s!\n", studentId);
         return;
     }
-    
+
     printf("\n=== CAP NHAT THONG TIN SINH VIEN ===\n");
     printf("Thong tin hien tai:\n");
-    printf("Ma SV: %s\n", student->studentId);
+    printf("MSSV: %s\n", student->studentId);
     printf("Ho ten: %s\n", student->fullName);
-    
-    printf("\nNhap thong tin moi (Enter de giu nguyen):\n");
-    
+    printf("Ngay sinh: %02d/%02d/%04d\n", student->birthDate.day, student->birthDate.month, student->birthDate.year);
+    printf("Gioi tinh: %s\n", student->gender);
+    printf("Khoa: %s\n", student->department);
+    printf("Email: %s\n", student->email);
+    printf("So dien thoai: %s\n", student->phone);
+
+    printf("\nNhap thong tin moi (nhan Enter de giu nguyen):\n");
+
+    char buffer[MAX_STRING];
+
+    // Họ tên
     printf("Ho ten moi: ");
-    char newName[MAX_STRING];
-    fgets(newName, MAX_STRING, stdin);
-    if (strlen(newName) > 1) {
-        newName[strcspn(newName, "\n")] = 0;
-        strcpy(student->fullName, newName);
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(student->fullName, buffer);
     }
-    
+
+    // Ngày sinh
+    printf("Ngay sinh moi (dd/mm/yyyy): ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        int d, m, y;
+        if (sscanf(buffer, "%d/%d/%d", &d, &m, &y) == 3) {
+            student->birthDate.day = d;
+            student->birthDate.month = m;
+            student->birthDate.year = y;
+        } else {
+            printf("Dinh dang ngay sinh khong hop le, giu nguyen.\n");
+        }
+    }
+
+    // Giới tính
+    printf("Gioi tinh moi: ");
+    fgets(buffer, sizeof(buffer), stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(student->gender, buffer);
+    }
+
+    // Khoa
+    printf("Khoa moi: ");
+    fgets(buffer, sizeof(buffer), stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(student->department, buffer);
+    }
+
+    // Email
     printf("Email moi: ");
-    char newEmail[MAX_STRING];
-    fgets(newEmail, MAX_STRING, stdin);
-    if (strlen(newEmail) > 1) {
-        newEmail[strcspn(newEmail, "\n")] = 0;
-        strcpy(student->email, newEmail);
+    fgets(buffer, sizeof(buffer), stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(student->email, buffer);
     }
-    
+
+    // Số điện thoại
+    printf("So dien thoai moi: ");
+    fgets(buffer, sizeof(buffer), stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(student->phone, buffer);
+    }
+
     printf("Cap nhat thong tin thanh cong!\n");
 }
 
