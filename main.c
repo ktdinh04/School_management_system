@@ -16,7 +16,7 @@ void displayMainMenu() {
     printf("3. Quan ly mon hoc\n");
     printf("4. Quan ly thoi khoa bieu\n");
     printf("5. Quan ly hoc phi\n");
-    printf("6. Quan ly khoa\n");
+    printf("6. Quan ly nganh\n");
     printf("7. Bao cao\n");
     printf("8. Luu du lieu\n");
     printf("9. Tai du lieu\n");
@@ -82,6 +82,16 @@ void displayReportMenu() {
     printf("1. Lich giang day cua giang vien\n");
     printf("2. Danh sach hoc phi chua thanh toan\n");
     printf("3. Thong ke so luong sinh vien theo khoa\n");
+    printf("0. Quay lai menu chinh\n");
+    printf("Chon: ");
+}
+
+void displayDepartmentMenu() {
+    printf("\n=== QUAN LY KHOA ===\n");
+    printf("1. Them khoa\n");
+    printf("2. Hien thi danh sach khoa\n");
+    printf("3. Cap nhat thong tin khoa\n");
+    printf("4. Xoa khoa\n");
     printf("0. Quay lai menu chinh\n");
     printf("Chon: ");
 }
@@ -346,6 +356,43 @@ void handleReportMenu(SchoolSystem* system) {
     } while (choice != 0);
 }
 
+void handleDepartmentMenu(SchoolSystem* system) {
+    int choice;
+    char id[MAX_ID];
+    do {
+        displayDepartmentMenu();
+        scanf("%d", &choice);
+        clearInputBuffer();
+        switch (choice) {
+            case 1:
+                addDepartment(&system->departments);
+                break;
+            case 2:
+                displayDepartments(system->departments);
+                break;
+            case 3:
+                printf("Nhap ma khoa can cap nhat: ");
+                scanf("%s", id);
+                clearInputBuffer();
+                updateDepartment(system->departments, id);
+                break;
+            case 4:
+                printf("Nhap ma khoa can xoa: ");
+                scanf("%s", id);
+                deleteDepartment(&system->departments, id);
+                break;
+            case 0:
+                return;
+            default:
+                printf("Lua chon khong hop le!\n");
+        }
+        if (choice != 0) {
+            printf("\nNhan Enter de tiep tuc...");
+            getchar();
+        }
+    } while (choice != 0);
+}
+
 void handleMenuChoice(SchoolSystem* system, int choice) {
     switch (choice) {
         case 1:
@@ -364,8 +411,7 @@ void handleMenuChoice(SchoolSystem* system, int choice) {
             handleTuitionMenu(system);
             break;
         case 6:
-            addDepartment(&system->departments);
-            displayDepartments(system->departments);
+            handleDepartmentMenu(system);
             break;
         case 7:
             handleReportMenu(system);
@@ -374,12 +420,14 @@ void handleMenuChoice(SchoolSystem* system, int choice) {
             saveStudentsToFile(system->students, "students.txt");
             saveLecturersToFile(system->lecturers, "lecturers.txt");
             saveCoursesToFile(system->courses, "courses.txt");
+            saveDepartmentsToFile(system->departments, "database/departments.csv");
             printf("Luu tat ca du lieu thanh cong!\n");
             break;
         case 9:
             loadStudentsFromFile(&system->students, "students.txt");
             loadLecturersFromFile(&system->lecturers, "lecturers.txt");
             loadCoursesFromFile(&system->courses, "courses.txt");
+            loadDepartmentsFromFile(&system->departments, "database/departments.csv");
             printf("Tai tat ca du lieu thanh cong!\n");
             break;
         case 0:

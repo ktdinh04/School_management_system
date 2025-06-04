@@ -1,4 +1,6 @@
 #include "school_management.h"
+#include <sys/stat.h>
+#include <direct.h>
 
 void addLecturer(Lecturer** head) {
     Lecturer* newLecturer = (Lecturer*)malloc(sizeof(Lecturer));
@@ -69,33 +71,35 @@ Lecturer* findLecturer(Lecturer* head, char* lecturerId) {
     return NULL;
 }
 
-void deleteLecturer(Lecturer** head, char* lecturerId) {
-    if (!*head) {
-        printf("Danh sach giang vien trong!\n");
+void saveLecturersToFile(Lecturer* head, const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        printf("Khong the mo file de ghi!\n");
         return;
     }
-    
-    Lecturer* current = *head;
-    Lecturer* prev = NULL;
-    
-    while (current && strcmp(current->lecturerId, lecturerId) != 0) {
-        prev = current;
+    Lecturer* current = head;
+    while (current) {
+        fprintf(file, "%s,%s,%s,%s,%s,%s\n", current->lecturerId, current->fullName, current->department, current->specialty, current->email, current->phone);
         current = current->next;
     }
-    
-    if (!current) {
-        printf("Khong tim thay giang vien co ma %s!\n", lecturerId);
-        return;
+    fclose(file);
+}
+
+void loadLecturersFromFile(Lecturer** head, const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) return;
+    char line[512];
+    while (fgets(line, sizeof(line), file)) {
+        Lecturer* newLecturer = (Lecturer*)malloc(sizeof(Lecturer));
+        if (!newLecturer) continue;
+        if (sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", newLecturer->lecturerId, newLecturer->fullName, newLecturer->department, newLecturer->specialty, newLecturer->email, newLecturer->phone) == 6) {
+            newLecturer->next = *head;
+            *head = newLecturer;
+        } else {
+            free(newLecturer);
+        }
     }
-    
-    if (prev) {
-        prev->next = current->next;
-    } else {
-        *head = current->next;
-    }
-    
-    free(current);
-    printf("Xoa giang vien thanh cong!\n");
+    fclose(file);
 }
 
 void updateLecturer(Lecturer* head, char* lecturerId) {
@@ -106,15 +110,12 @@ void updateLecturer(Lecturer* head, char* lecturerId) {
     }
     
     printf("\n=== CAP NHAT THONG TIN GIANG VIEN ===\n");
-    printf("Thong tin hien tai:\n");
     printf("Ma GV: %s\n", lecturer->lecturerId);
     printf("Ho ten: %s\n", lecturer->fullName);
     printf("Khoa: %s\n", lecturer->department);
     printf("Chuyen nganh: %s\n", lecturer->specialty);
     printf("Email: %s\n", lecturer->email);
     printf("So dien thoai: %s\n", lecturer->phone);
-    
-    printf("\nNhap thong tin moi (Enter de giu nguyen):\n");
     
     char buffer[MAX_STRING];
     
@@ -159,54 +160,23 @@ void updateLecturer(Lecturer* head, char* lecturerId) {
     }
     
     printf("Cap nhat thong tin thanh cong!\n");
+    saveLecturersToFile(head, "database/lecturers.csv");
 }
 
-void saveLecturersToFile(Lecturer* head, const char* filename) {
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        printf("Khong the mo file de ghi!\n");
-        return;
-    }
-    
-    Lecturer* current = head;
-    while (current) {
-        fprintf(file, "%s|%s|%s|%s|%s|%s\n",
-                current->lecturerId, current->fullName, current->department,
-                current->specialty, current->email, current->phone);
+void deleteLecturer(Lecturer** head, char* lecturerId) {
+    Lecturer* current = *head;
+    Lecturer* prev = NULL;
+    while (current && strcmp(current->lecturerId, lecturerId) != 0) {
+        prev = current;
         current = current->next;
     }
-    
-    fclose(file);
-    printf("Luu du lieu giang vien thanh cong!\n");
-}
-
-void loadLecturersFromFile(Lecturer** head, const char* filename) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Khong the mo file de doc!\n");
+    if (!current) {
+        printf("Khong tim thay giang vien co ma %s!\n", lecturerId);
         return;
     }
-    
-    char line[500];
-    while (fgets(line, sizeof(line), file)) {
-        Lecturer* newLecturer = (Lecturer*)malloc(sizeof(Lecturer));
-        if (!newLecturer) continue;
-        int result = sscanf(line, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]",
-                           newLecturer->lecturerId,
-                           newLecturer->fullName,
-                           newLecturer->department,
-                           newLecturer->specialty,
-                           newLecturer->email,
-                           newLecturer->phone);
-        if (result != 6) {
-            free(newLecturer);
-            continue;
-        }
-        
-        newLecturer->next = *head;
-        *head = newLecturer;
-    }
-    
-    fclose(file);
-    printf("Tai du lieu giang vien thanh cong!\n");
+    if (prev) prev->next = current->next;
+    else *head = current->next;
+    free(current);
+    saveLecturersToFile(*head, "database/lecturers.csv");
+    printf("Xoa giang vien thanh cong!\n");
 }

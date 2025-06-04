@@ -1,4 +1,6 @@
 #include "school_management.h"
+#include <sys/stat.h>
+#include <direct.h>
 
 void addCourse(Course** head) {
     Course* newCourse = (Course*)malloc(sizeof(Course));
@@ -59,33 +61,35 @@ Course* findCourse(Course* head, char* courseId) {
     return NULL;
 }
 
-void deleteCourse(Course** head, char* courseId) {
-    if (!*head) {
-        printf("Danh sach mon hoc trong!\n");
+void saveCoursesToFile(Course* head, const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        printf("Khong the mo file de ghi!\n");
         return;
     }
-    
-    Course* current = *head;
-    Course* prev = NULL;
-    
-    while (current && strcmp(current->courseId, courseId) != 0) {
-        prev = current;
+    Course* current = head;
+    while (current) {
+        fprintf(file, "%s,%s,%d,%s\n", current->courseId, current->courseName, current->credits, current->lecturerId);
         current = current->next;
     }
-    
-    if (!current) {
-        printf("Khong tim thay mon hoc co ma %s!\n", courseId);
-        return;
+    fclose(file);
+}
+
+void loadCoursesFromFile(Course** head, const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) return;
+    char line[512];
+    while (fgets(line, sizeof(line), file)) {
+        Course* newCourse = (Course*)malloc(sizeof(Course));
+        if (!newCourse) continue;
+        if (sscanf(line, "%[^,],%[^,],%d,%[^\n]", newCourse->courseId, newCourse->courseName, &newCourse->credits, newCourse->lecturerId) == 4) {
+            newCourse->next = *head;
+            *head = newCourse;
+        } else {
+            free(newCourse);
+        }
     }
-    
-    if (prev) {
-        prev->next = current->next;
-    } else {
-        *head = current->next;
-    }
-    
-    free(current);
-    printf("Xoa mon hoc thanh cong!\n");
+    fclose(file);
 }
 
 void updateCourse(Course* head, char* courseId) {
@@ -96,85 +100,38 @@ void updateCourse(Course* head, char* courseId) {
     }
     
     printf("\n=== CAP NHAT THONG TIN MON HOC ===\n");
-    printf("Thong tin hien tai:\n");
     printf("Ma MH: %s\n", course->courseId);
-    printf("Ten mon hoc: %s\n", course->courseName);
+    printf("Ten MH: %s\n", course->courseName);
     printf("So tin chi: %d\n", course->credits);
-    
-    printf("\nNhap thong tin moi (Enter de giu nguyen):\n");
-    
-    printf("Ten mon hoc moi: ");
-    char newName[MAX_STRING];
-    fgets(newName, MAX_STRING, stdin);
-    if (strlen(newName) > 1) {
-        newName[strcspn(newName, "\n")] = 0;
-        strcpy(course->courseName, newName);
-    }
-    
-    printf("So tin chi moi (0 de giu nguyen): ");
-    int newCredits;
-    scanf("%d", &newCredits);
-    if (newCredits > 0) {
-        course->credits = newCredits;
-    }
-    
-    printf("Ma giang vien moi: ");
-    char newLecturerId[MAX_ID];
-    scanf("%s", newLecturerId);
-    if (strlen(newLecturerId) > 0) {
-        strcpy(course->lecturerId, newLecturerId);
-    }
-    
-    printf("Cap nhat thong tin thanh cong!\n");
+    printf("Ma GV phu trach: %s\n", course->lecturerId);
+    char buffer[MAX_STRING];
+    printf("Ten MH moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) { buffer[strcspn(buffer, "\n")] = 0; strcpy(course->courseName, buffer); }
+    printf("So tin chi moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) { int c; if (sscanf(buffer, "%d", &c) == 1) course->credits = c; }
+    printf("Ma GV phu trach moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) { buffer[strcspn(buffer, "\n")] = 0; strcpy(course->lecturerId, buffer); }
+    printf("Cap nhat mon hoc thanh cong!\n");
+    saveCoursesToFile(head, "database/courses.csv");
 }
 
-void saveCoursesToFile(Course* head, const char* filename) {
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        printf("Khong the mo file de ghi!\n");
-        return;
-    }
-    
-    Course* current = head;
-    while (current) {
-        fprintf(file, "%s|%s|%d|%s\n",
-                current->courseId, current->courseName,
-                current->credits, current->lecturerId);
+void deleteCourse(Course** head, char* courseId) {
+    Course* current = *head;
+    Course* prev = NULL;
+    while (current && strcmp(current->courseId, courseId) != 0) {
+        prev = current;
         current = current->next;
     }
-    
-    fclose(file);
-    printf("Luu du lieu mon hoc thanh cong!\n");
-}
-
-void loadCoursesFromFile(Course** head, const char* filename) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Khong the mo file de doc!\n");
+    if (!current) {
+        printf("Khong tim thay mon hoc co ma %s!\n", courseId);
         return;
     }
-    
-    char line[300];
-    while (fgets(line, sizeof(line), file)) {
-        Course* newCourse = (Course*)malloc(sizeof(Course));
-        if (!newCourse) continue;
-        
-        char* token = strtok(line, "|");
-        strcpy(newCourse->courseId, token);
-        
-        token = strtok(NULL, "|");
-        strcpy(newCourse->courseName, token);
-        
-        token = strtok(NULL, "|");
-        newCourse->credits = atoi(token);
-        
-        token = strtok(NULL, "|\n");
-        strcpy(newCourse->lecturerId, token);
-        
-        newCourse->next = *head;
-        *head = newCourse;
-    }
-    
-    fclose(file);
-    printf("Tai du lieu mon hoc thanh cong!\n");
+    if (prev) prev->next = current->next;
+    else *head = current->next;
+    free(current);
+    saveCoursesToFile(*head, "database/courses.csv");
+    printf("Xoa mon hoc thanh cong!\n");
 }

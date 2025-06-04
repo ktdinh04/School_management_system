@@ -148,6 +148,11 @@ void calculateTuitionByCredits(Course* courses, char* studentId, int totalCredit
 // Department functions
 void addDepartment(Department** head);
 void displayDepartments(Department* head);
+void deleteDepartment(Department** head, char* departmentId);
+Department* findDepartment(Department* head, char* departmentId);
+void updateDepartment(Department* head, char* departmentId);
+void saveDepartmentsToFile(Department* head, const char* filename);
+void loadDepartmentsFromFile(Department** head, const char* filename);
 
 // Utility functions
 void clearInputBuffer();

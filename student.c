@@ -1,4 +1,6 @@
 #include "school_management.h"
+#include <sys/stat.h>
+#include <direct.h>
 
 void addStudent(Student** head) {
     Student* newStudent = (Student*)malloc(sizeof(Student));
@@ -40,29 +42,47 @@ void addStudent(Student** head) {
     
     newStudent->next = *head;
     *head = newStudent;
-    
+    // Đảm bảo thư mục database tồn tại
+    struct _stat st = {0};
+    if (_stat("database", &st) == -1) {
+        _mkdir("database");
+    }
+    // Ghi vào file CSV
+    FILE* file = fopen("database/students.csv", "a");
+    if (file) {
+        fprintf(file, "%s,%s,%02d/%02d/%04d,%s,%s,%s,%s\n",
+            newStudent->studentId, newStudent->fullName,
+            newStudent->birthDate.day, newStudent->birthDate.month, newStudent->birthDate.year,
+            newStudent->gender, newStudent->department, newStudent->email, newStudent->phone);
+        fclose(file);
+    } else {
+        printf("Khong the mo file database/students.csv de ghi!\n");
+    }
     printf("Them sinh vien thanh cong!\n");
 }
 
 void displayStudents(Student* head) {
-    if (!head) {
-        printf("Danh sach sinh vien trong!\n");
+    // Đọc từ file CSV và hiển thị
+    FILE* file = fopen("database/students.csv", "r");
+    if (!file) {
+        printf("Khong the mo file database/students.csv de doc hoac danh sach sinh vien trong!\n");
         return;
     }
-    
     printf("\n=== DANH SACH SINH VIEN ===\n");
-    printf("%-10s %-25s %-12s %-8s %-20s %-25s %-15s\n", 
+    printf("%-10s %-25s %-12s %-8s %-20s %-25s %-15s\n",
            "Ma SV", "Ho ten", "Ngay sinh", "Gioi tinh", "Khoa", "Email", "SDT");
     printf("=====================================================================================================\n");
-    
-    Student* current = head;
-    while (current) {
-        printf("%-10s %-25s %02d/%02d/%04d %-8s %-20s %-25s %-15s\n",
-               current->studentId, current->fullName,
-               current->birthDate.day, current->birthDate.month, current->birthDate.year,
-               current->gender, current->department, current->email, current->phone);
-        current = current->next;
+    char line[512];
+    while (fgets(line, sizeof(line), file)) {
+        char studentId[MAX_ID], fullName[MAX_STRING], birth[20], gender[10], department[MAX_STRING], email[MAX_STRING], phone[MAX_STRING];
+        int n = sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]",
+            studentId, fullName, birth, gender, department, email, phone);
+        if (n == 7) {
+            printf("%-10s %-25s %-12s %-8s %-20s %-25s %-15s\n",
+                studentId, fullName, birth, gender, department, email, phone);
+        }
     }
+    fclose(file);
 }
 
 Student* findStudent(Student* head, char* studentId) {
