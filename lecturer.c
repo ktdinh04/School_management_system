@@ -26,9 +26,11 @@ void addLecturer(Lecturer** head) {
     
     printf("Email: ");
     scanf("%s", newLecturer->email);
+    clearInputBuffer();
     
     printf("So dien thoai: ");
     scanf("%s", newLecturer->phone);
+    clearInputBuffer();
     
     newLecturer->next = *head;
     *head = newLecturer;
@@ -107,23 +109,53 @@ void updateLecturer(Lecturer* head, char* lecturerId) {
     printf("Thong tin hien tai:\n");
     printf("Ma GV: %s\n", lecturer->lecturerId);
     printf("Ho ten: %s\n", lecturer->fullName);
+    printf("Khoa: %s\n", lecturer->department);
+    printf("Chuyen nganh: %s\n", lecturer->specialty);
+    printf("Email: %s\n", lecturer->email);
+    printf("So dien thoai: %s\n", lecturer->phone);
     
     printf("\nNhap thong tin moi (Enter de giu nguyen):\n");
     
+    char buffer[MAX_STRING];
+    
+    // Họ tên
     printf("Ho ten moi: ");
-    char newName[MAX_STRING];
-    fgets(newName, MAX_STRING, stdin);
-    if (strlen(newName) > 1) {
-        newName[strcspn(newName, "\n")] = 0;
-        strcpy(lecturer->fullName, newName);
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->fullName, buffer);
     }
     
+    // Khoa
+    printf("Khoa moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->department, buffer);
+    }
+    
+    // Chuyên ngành
+    printf("Chuyen nganh moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->specialty, buffer);
+    }
+    
+    // Email
     printf("Email moi: ");
-    char newEmail[MAX_STRING];
-    fgets(newEmail, MAX_STRING, stdin);
-    if (strlen(newEmail) > 1) {
-        newEmail[strcspn(newEmail, "\n")] = 0;
-        strcpy(lecturer->email, newEmail);
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->email, buffer);
+    }
+    
+    // Số điện thoại
+    printf("So dien thoai moi: ");
+    fgets(buffer, MAX_STRING, stdin);
+    if (strlen(buffer) > 1) {
+        buffer[strcspn(buffer, "\n")] = 0;
+        strcpy(lecturer->phone, buffer);
     }
     
     printf("Cap nhat thong tin thanh cong!\n");
@@ -159,24 +191,17 @@ void loadLecturersFromFile(Lecturer** head, const char* filename) {
     while (fgets(line, sizeof(line), file)) {
         Lecturer* newLecturer = (Lecturer*)malloc(sizeof(Lecturer));
         if (!newLecturer) continue;
-        
-        char* token = strtok(line, "|");
-        strcpy(newLecturer->lecturerId, token);
-        
-        token = strtok(NULL, "|");
-        strcpy(newLecturer->fullName, token);
-        
-        token = strtok(NULL, "|");
-        strcpy(newLecturer->department, token);
-        
-        token = strtok(NULL, "|");
-        strcpy(newLecturer->specialty, token);
-        
-        token = strtok(NULL, "|");
-        strcpy(newLecturer->email, token);
-        
-        token = strtok(NULL, "|\n");
-        strcpy(newLecturer->phone, token);
+        int result = sscanf(line, "%[^|]|%[^|]|%[^|]|%[^|]|%[^|]|%[^\n]",
+                           newLecturer->lecturerId,
+                           newLecturer->fullName,
+                           newLecturer->department,
+                           newLecturer->specialty,
+                           newLecturer->email,
+                           newLecturer->phone);
+        if (result != 6) {
+            free(newLecturer);
+            continue;
+        }
         
         newLecturer->next = *head;
         *head = newLecturer;
