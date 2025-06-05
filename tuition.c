@@ -125,6 +125,7 @@ void displayUnpaidTuitions(Tuition* head) {
 }
 
 void calculateTuitionByCredits(Course* courses, char* studentId, int totalCredits, double pricePerCredit) {
+    (void)courses;
     printf("\n=== TINH HOC PHI THEO TIN CHI ===\n");
     printf("Ma sinh vien: %s\n", studentId);
     printf("Tong so tin chi: %d\n", totalCredits);

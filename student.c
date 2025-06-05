@@ -62,6 +62,7 @@ void addStudent(Student** head) {
 }
 
 void displayStudents(Student* head) {
+    (void)head;
     // Đọc từ file CSV và hiển thị
     FILE* file = fopen("database/students.csv", "r");
     if (!file) {
@@ -86,13 +87,31 @@ void displayStudents(Student* head) {
 }
 
 Student* findStudent(Student* head, char* studentId) {
-    Student* current = head;
-    while (current) {
-        if (strcmp(current->studentId, studentId) == 0) {
-            return current;
+    (void)head;
+    FILE* file = fopen("database/students.csv", "r");
+    if (!file) return NULL;
+    static Student found;
+    char line[512];
+    while (fgets(line, sizeof(line), file)) {
+        int d, m, y;
+        char gender[20], department[MAX_STRING], email[MAX_STRING], phone[MAX_STRING];
+        char id[MAX_ID], name[MAX_STRING];
+        int n = sscanf(line, "%[^,],%[^,],%d/%d/%d,%[^,],%[^,],%[^,],%[^\n]", id, name, &d, &m, &y, gender, department, email, phone);
+        if (n >= 8 && strcmp(id, studentId) == 0) {
+            strcpy(found.studentId, id);
+            strcpy(found.fullName, name);
+            found.birthDate.day = d;
+            found.birthDate.month = m;
+            found.birthDate.year = y;
+            strcpy(found.gender, gender);
+            strcpy(found.department, department);
+            strcpy(found.email, email);
+            strcpy(found.phone, phone);
+            fclose(file);
+            return &found;
         }
-        current = current->next;
     }
+    fclose(file);
     return NULL;
 }
 
@@ -232,36 +251,31 @@ void saveStudentsToFile(Student* head, const char* filename) {
 }
 
 void loadStudentsFromFile(Student** head, const char* filename) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Khong the mo file de doc!\n");
-        return;
+    // Giải phóng danh sách cũ nếu có
+    Student* cur = *head;
+    while (cur) {
+        Student* tmp = cur;
+        cur = cur->next;
+        free(tmp);
     }
-    char line[500];
+    *head = NULL;
+    FILE* file = fopen(filename, "r");
+    if (!file) return;
+    char line[512];
     while (fgets(line, sizeof(line), file)) {
         Student* newStudent = (Student*)malloc(sizeof(Student));
         if (!newStudent) continue;
-        
-        int result = sscanf(line, "%[^|]|%[^|]|%d/%d/%d|%[^|]|%[^|]|%[^|]|%[^\n]",
-                           newStudent->studentId,
-                           newStudent->fullName,
-                           &newStudent->birthDate.day,
-                           &newStudent->birthDate.month,
-                           &newStudent->birthDate.year,
-                           newStudent->gender,
-                           newStudent->department,
-                           newStudent->email,
-                           newStudent->phone);
-        
-        if (result != 9) {
+        int d, m, y;
+        if (sscanf(line, "%[^,],%[^,],%d/%d/%d,%[^,],%[^,],%[^,],%[^\n]",
+            newStudent->studentId, newStudent->fullName, &d, &m, &y, newStudent->gender, newStudent->department, newStudent->email, newStudent->phone) >= 8) {
+            newStudent->birthDate.day = d;
+            newStudent->birthDate.month = m;
+            newStudent->birthDate.year = y;
+            newStudent->next = *head;
+            *head = newStudent;
+        } else {
             free(newStudent);
-            continue;
         }
-        
-        newStudent->next = *head;
-        *head = newStudent;
     }
-    
     fclose(file);
-    printf("Tai du lieu sinh vien thanh cong!\n");
 }

@@ -16,10 +16,9 @@ void displayMainMenu() {
     printf("3. Quan ly mon hoc\n");
     printf("4. Quan ly thoi khoa bieu\n");
     printf("5. Quan ly hoc phi\n");
-    printf("6. Quan ly nganh\n");
+    printf("6. Quan ly khoa\n");
     printf("7. Bao cao\n");
-    printf("8. Luu du lieu\n");
-    printf("9. Tai du lieu\n");
+    printf("8. Tai du lieu\n");
     printf("0. Thoat\n");
     printf("Chon chuc nang: ");
 }
@@ -87,11 +86,11 @@ void displayReportMenu() {
 }
 
 void displayDepartmentMenu() {
-    printf("\n=== QUAN LY KHOA ===\n");
-    printf("1. Them khoa\n");
-    printf("2. Hien thi danh sach khoa\n");
-    printf("3. Cap nhat thong tin khoa\n");
-    printf("4. Xoa khoa\n");
+    printf("\n=== QUAN LY NGANH ===\n");
+    printf("1. Them nganh\n");
+    printf("2. Hien thi danh sach nganh\n");
+    printf("3. Cap nhat thong tin nganh\n");
+    printf("4. Xoa nganh\n");
     printf("0. Quay lai menu chinh\n");
     printf("Chon: ");
 }
@@ -371,13 +370,13 @@ void handleDepartmentMenu(SchoolSystem* system) {
                 displayDepartments(system->departments);
                 break;
             case 3:
-                printf("Nhap ma khoa can cap nhat: ");
+                printf("Nhap ma nganh can cap nhat: ");
                 scanf("%s", id);
                 clearInputBuffer();
                 updateDepartment(system->departments, id);
                 break;
             case 4:
-                printf("Nhap ma khoa can xoa: ");
+                printf("Nhap ma nganh can xoa: ");
                 scanf("%s", id);
                 deleteDepartment(&system->departments, id);
                 break;
@@ -417,17 +416,11 @@ void handleMenuChoice(SchoolSystem* system, int choice) {
             handleReportMenu(system);
             break;
         case 8:
-            saveStudentsToFile(system->students, "students.txt");
-            saveLecturersToFile(system->lecturers, "lecturers.txt");
-            saveCoursesToFile(system->courses, "courses.txt");
-            saveDepartmentsToFile(system->departments, "database/departments.csv");
-            printf("Luu tat ca du lieu thanh cong!\n");
-            break;
-        case 9:
-            loadStudentsFromFile(&system->students, "students.txt");
-            loadLecturersFromFile(&system->lecturers, "lecturers.txt");
-            loadCoursesFromFile(&system->courses, "courses.txt");
+            loadStudentsFromFile(&system->students, "database/students.csv");
+            loadLecturersFromFile(&system->lecturers, "database/lecturers.csv");
+            loadCoursesFromFile(&system->courses, "database/courses.csv");
             loadDepartmentsFromFile(&system->departments, "database/departments.csv");
+            loadSchedulesFromFile(&system->schedules, "database/schedules.csv");
             printf("Tai tat ca du lieu thanh cong!\n");
             break;
         case 0:
