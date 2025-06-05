@@ -153,13 +153,16 @@ void updateSchedule(ClassSchedule* head, char* scheduleId) {
     int n = 0;
     char line[512]; 
     int found = 0;
-    
-    while (fgets(line, sizeof(line), file)) {
-        sscanf(line, "%[^,],%[^,],%d,%d,%d,%[^\n]", 
-               list[n].scheduleId, list[n].courseId, 
-               &list[n].dayOfWeek, &list[n].startHour, 
-               &list[n].endHour, list[n].classroom);
-        n++;
+      while (fgets(line, sizeof(line), file)) {
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        if (sscanf(line, "%[^,],%[^,],%d,%d,%d,%[^\n]", 
+                   list[n].scheduleId, list[n].courseId, 
+                   &list[n].dayOfWeek, &list[n].startHour, 
+                   &list[n].endHour, list[n].classroom) == 6) {
+            n++;
+        }
     }
     fclose(file);
     
@@ -243,15 +246,18 @@ void deleteSchedule(ClassSchedule** head, char* scheduleId) {
     ClassSchedule list[1000]; 
     int n = 0, idx = -1;
     char line[512];
-    
-    while (fgets(line, sizeof(line), file)) {
-        sscanf(line, "%[^,],%[^,],%d,%d,%d,%[^\n]", 
-               list[n].scheduleId, list[n].courseId, 
-               &list[n].dayOfWeek, &list[n].startHour, 
-               &list[n].endHour, list[n].classroom);
-        if (strcmp(list[n].scheduleId, scheduleId) == 0) 
-            idx = n;
-        n++;
+      while (fgets(line, sizeof(line), file)) {
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        if (sscanf(line, "%[^,],%[^,],%d,%d,%d,%[^\n]", 
+                   list[n].scheduleId, list[n].courseId, 
+                   &list[n].dayOfWeek, &list[n].startHour, 
+                   &list[n].endHour, list[n].classroom) == 6) {
+            if (strcmp(list[n].scheduleId, scheduleId) == 0) 
+                idx = n;
+            n++;
+        }
     }
     fclose(file);
     
