@@ -97,8 +97,12 @@ void updateLecturer(Lecturer* head, char* lecturerId) {
     Lecturer list[1000]; int n = 0;
     char line[512]; int found = 0;
     while (fgets(line, sizeof(line), file)) {
-        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", list[n].lecturerId, list[n].fullName, list[n].department, list[n].specialty, list[n].email, list[n].phone);
-        n++;
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        if (sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", list[n].lecturerId, list[n].fullName, list[n].department, list[n].specialty, list[n].email, list[n].phone) == 6) {
+            n++;
+        }
     }
     fclose(file);
     for (int i = 0; i < n; ++i) {
@@ -145,9 +149,13 @@ void deleteLecturer(Lecturer** head, char* lecturerId) {
     Lecturer list[1000]; int n = 0, idx = -1;
     char line[512];
     while (fgets(line, sizeof(line), file)) {
-        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", list[n].lecturerId, list[n].fullName, list[n].department, list[n].specialty, list[n].email, list[n].phone);
-        if (strcmp(list[n].lecturerId, lecturerId) == 0) idx = n;
-        n++;
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        if (sscanf(line, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]", list[n].lecturerId, list[n].fullName, list[n].department, list[n].specialty, list[n].email, list[n].phone) == 6) {
+            if (strcmp(list[n].lecturerId, lecturerId) == 0) idx = n;
+            n++;
+        }
     }
     fclose(file);
     if (idx == -1) { printf("Khong tim thay giang vien co ma %s!\n", lecturerId); return; }

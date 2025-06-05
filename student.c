@@ -116,118 +116,170 @@ Student* findStudent(Student* head, char* studentId) {
 }
 
 void deleteStudent(Student** head, char* studentId) {
-    if (!*head) {
-        printf("Danh sach sinh vien trong!\n");
-        return;
+    (void)head;
+    FILE* file = fopen("database/students.csv", "r");
+    if (!file) { 
+        printf("Khong the mo file!\n"); 
+        return; 
     }
     
-    Student* current = *head;
-    Student* prev = NULL;
+    // Array to store all students except the one to delete
+    char lines[1000][512];
+    int n = 0, idx = -1;
+    char line[512];
     
-    while (current && strcmp(current->studentId, studentId) != 0) {
-        prev = current;
-        current = current->next;
+    while (fgets(line, sizeof(line), file)) {
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        char id[MAX_ID];
+        int result = sscanf(line, "%[^,]", id);
+        if (result == 1 && strcmp(id, studentId) == 0) {
+            idx = n; // Mark this line for deletion
+        }
+        strcpy(lines[n], line);
+        n++;
+    }
+    fclose(file);
+    
+    if (idx == -1) { 
+        printf("Khong tim thay sinh vien co ma %s!\n", studentId); 
+        return; 
     }
     
-    if (!current) {
-        printf("Khong tim thay sinh vien co ma %s!\n", studentId);
-        return;
-    }
+    // Shift lines to remove the deleted one
+    for (int i = idx; i < n - 1; ++i) 
+        strcpy(lines[i], lines[i + 1]);
+    n--;
     
-    if (prev) {
-        prev->next = current->next;
-    } else {
-        *head = current->next;
-    }
-    
-    free(current);
+    // Write back to file
+    file = fopen("database/students.csv", "w");
+    for (int i = 0; i < n; ++i)
+        fputs(lines[i], file);
+    fclose(file);
     printf("Xoa sinh vien thanh cong!\n");
 }
 
 void updateStudent(Student* head, char* studentId) {
-    Student* student = findStudent(head, studentId);
-    if (!student) {
-        printf("Khong tim thay sinh vien co ma %s!\n", studentId);
-        return;
+    (void)head;
+    FILE* file = fopen("database/students.csv", "r");
+    if (!file) { 
+        printf("Khong the mo file!\n"); 
+        return; 
     }
-
-    printf("\n=== CAP NHAT THONG TIN SINH VIEN ===\n");
-    printf("Thong tin hien tai:\n");
-    printf("MSSV: %s\n", student->studentId);
-    printf("Ho ten: %s\n", student->fullName);
-    printf("Ngay sinh: %02d/%02d/%04d\n", student->birthDate.day, student->birthDate.month, student->birthDate.year);
-    printf("Gioi tinh: %s\n", student->gender);
-    printf("Khoa: %s\n", student->department);
-    printf("Email: %s\n", student->email);
-    printf("So dien thoai: %s\n", student->phone);
-
-    printf("\nNhap thong tin moi (nhan Enter de giu nguyen):\n");
-
-    char buffer[MAX_STRING];
-
-    // Họ tên
-    printf("Ho ten moi: ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        buffer[strcspn(buffer, "\n")] = 0;
-        strcpy(student->fullName, buffer);
+    
+    // Array to store all students
+    char lines[1000][512];
+    int n = 0, found = 0;
+    char line[512];
+    
+    while (fgets(line, sizeof(line), file)) {
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
+        strcpy(lines[n], line);
+        n++;
     }
+    fclose(file);
+    
+    // Find and update the student
+    for (int i = 0; i < n; ++i) {
+        char id[MAX_ID], fullName[MAX_STRING], birth[20], gender[10], department[MAX_STRING], email[MAX_STRING], phone[MAX_STRING];
+        int result = sscanf(lines[i], "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,],%[^\n]",
+                           id, fullName, birth, gender, department, email, phone);
+        
+        if (result == 7 && strcmp(id, studentId) == 0) {
+            found = 1;
+            printf("\n=== CAP NHAT THONG TIN SINH VIEN ===\n");
+            printf("Thong tin hien tai:\n");
+            printf("MSSV: %s\n", id);
+            printf("Ho ten: %s\n", fullName);
+            printf("Ngay sinh: %s\n", birth);
+            printf("Gioi tinh: %s\n", gender);
+            printf("Khoa: %s\n", department);
+            printf("Email: %s\n", email);
+            printf("So dien thoai: %s\n", phone);
 
-    // Ngày sinh
-    printf("Ngay sinh moi (dd/mm/yyyy): ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        int d, m, y;
-        if (sscanf(buffer, "%d/%d/%d", &d, &m, &y) == 3) {
-            if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2025) {
-                student->birthDate.day = d;
-                student->birthDate.month = m;
-                student->birthDate.year = y;
-            } else {
-                printf("Ngay sinh khong hop le, giu nguyen.\n");
+            printf("\nNhap thong tin moi (nhan Enter de giu nguyen):\n");
+
+            char buffer[MAX_STRING];
+
+            // Họ tên
+            printf("Ho ten moi: ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(fullName, buffer);
             }
-        } else {
-            printf("Dinh dang ngay sinh khong hop le, giu nguyen.\n");
+
+            // Ngày sinh
+            printf("Ngay sinh moi (dd/mm/yyyy): ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                int d, m, y;
+                if (sscanf(buffer, "%d/%d/%d", &d, &m, &y) == 3) {
+                    if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2025) {
+                        sprintf(birth, "%02d/%02d/%04d", d, m, y);
+                    } else {
+                        printf("Ngay sinh khong hop le, giu nguyen.\n");
+                    }
+                } else {
+                    printf("Dinh dang ngay sinh khong hop le, giu nguyen.\n");
+                }
+            }
+
+            // Giới tính
+            printf("Gioi tinh moi: ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(gender, buffer);
+            }
+
+            // Khoa
+            printf("Khoa moi: ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(department, buffer);
+            }
+
+            // Email
+            printf("Email moi: ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(email, buffer);
+            }
+
+            // Số điện thoại
+            printf("So dien thoai moi: ");
+            fgets(buffer, MAX_STRING, stdin);
+            if (strlen(buffer) > 1) {
+                buffer[strcspn(buffer, "\n")] = 0;
+                strcpy(phone, buffer);
+            }
+
+            // Update the line with new data
+            sprintf(lines[i], "%s,%s,%s,%s,%s,%s,%s\n",
+                   id, fullName, birth, gender, department, email, phone);
+            
+            printf("Cap nhat thong tin thanh cong!\n");
+            break;
         }
     }
-
-    // Giới tính
-    printf("Gioi tinh moi: ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        buffer[strcspn(buffer, "\n")] = 0;
-        if (strlen(buffer) < sizeof(student->gender)) {
-            strcpy(student->gender, buffer);
-        } else {
-            printf("Gioi tinh qua dai, giu nguyen.\n");
-        }
+    
+    if (!found) { 
+        printf("Khong tim thay sinh vien co ma %s!\n", studentId); 
+        return; 
     }
-
-    // Khoa
-    printf("Khoa moi: ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        buffer[strcspn(buffer, "\n")] = 0;
-        strcpy(student->department, buffer);
-    }
-
-    // Email
-    printf("Email moi: ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        buffer[strcspn(buffer, "\n")] = 0;
-        strcpy(student->email, buffer);
-    }
-
-    // Số điện thoại
-    printf("So dien thoai moi: ");
-    fgets(buffer, MAX_STRING, stdin);
-    if (strlen(buffer) > 1) {
-        buffer[strcspn(buffer, "\n")] = 0;
-        strcpy(student->phone, buffer);
-    }
-
-    printf("Cap nhat thong tin thanh cong!\n");
+    
+    // Write back to file
+    file = fopen("database/students.csv", "w");
+    for (int i = 0; i < n; ++i)
+        fputs(lines[i], file);
+    fclose(file);
 }
 
 void saveStudentsToFile(Student* head, const char* filename) {
