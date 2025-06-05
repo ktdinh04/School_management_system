@@ -137,6 +137,8 @@ void addSchedule(ClassSchedule** head);
 void displaySchedules(ClassSchedule* head);
 void deleteSchedule(ClassSchedule** head, char* scheduleId);
 void displayLecturerSchedule(ClassSchedule* schedules, Course* courses, char* lecturerId);
+void saveSchedulesToFile(ClassSchedule* head, const char* filename);
+void loadSchedulesFromFile(ClassSchedule** head, const char* filename);
 
 // Tuition functions
 void addTuition(Tuition** head);

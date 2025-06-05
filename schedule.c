@@ -69,10 +69,22 @@ void saveSchedulesToFile(ClassSchedule* head, const char* filename) {
 }
 
 void loadSchedulesFromFile(ClassSchedule** head, const char* filename) {
+    // Free old list if any
+    ClassSchedule* cur = *head;
+    while (cur) {
+        ClassSchedule* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    *head = NULL;
+    
     FILE* file = fopen(filename, "r");
     if (!file) return;
     char line[512];
     while (fgets(line, sizeof(line), file)) {
+        // Skip empty lines
+        if (line[0] == '\n' || line[0] == '\0') continue;
+        
         ClassSchedule* newSchedule = (ClassSchedule*)malloc(sizeof(ClassSchedule));
         if (!newSchedule) continue;
         if (sscanf(line, "%[^,],%[^,],%d,%d,%d,%[^\n]", newSchedule->scheduleId, newSchedule->courseId, &newSchedule->dayOfWeek, &newSchedule->startHour, &newSchedule->endHour, newSchedule->classroom) == 6) {
